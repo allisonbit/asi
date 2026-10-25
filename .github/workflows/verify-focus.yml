@@ -30,3 +30,20 @@ jobs:
           tests/test_horde_actor_critic.py
           tests/test_horde_actor_critic_hostile.py
           -q -o addopts="" --strict-config --strict-markers
+
+  suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Set up locked Python 3.12
+        uses: ./.github/actions/setup-locked-python
+        with:
+          python-version: "3.12"
+          extras: --extra dev --extra gymnasium --extra forager
+      - name: Full non-slow non-package suite
+        run: >-
+          uv run --no-sync python -m pytest tests
+          -m "not slow and not package"
+          -n 2 --dist loadfile -q -o addopts=""
+          --strict-config --strict-markers
