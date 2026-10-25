@@ -1,0 +1,32 @@
+---
+name: verify-focus
+# Fork-local verification only: never part of the contribution branch.
+"on":
+  push:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  focus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Set up locked Python 3.12
+        uses: ./.github/actions/setup-locked-python
+        with:
+          python-version: "3.12"
+          extras: --extra dev --extra gymnasium --extra forager
+      - name: Ruff
+        run: >-
+          uv run --no-sync ruff check
+          alberta_framework/core/horde_actor_critic.py
+          tests/test_horde_actor_critic.py
+      - name: Mypy
+        run: uv run --no-sync mypy
+      - name: Focused tests
+        run: >-
+          uv run --no-sync python -m pytest
+          tests/test_horde_actor_critic.py
+          tests/test_horde_actor_critic_hostile.py
+          -q -o addopts="" --strict-config --strict-markers
